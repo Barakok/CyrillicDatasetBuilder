@@ -8,7 +8,7 @@ def get_words_from_file(config):
     train_data = words[:split_index]
     test_data = words[split_index:]
 
-    print("train_data", train_data[0])
-    print("train_data", len(train_data[0]))
+    print("train_data!!", train_data[0])
+    print("train_data!!", len(train_data[0]))
 
     return train_data, test_data

@@ -174,6 +174,21 @@ class DatasetGenerator:
 
         return iterator
 
+    def save_combinations_with_address(self, combinations, folder, iterator):
+        for address, font, color in combinations:
+            # Валидация даты
+            image_path, text = self.image_creator_instance.create_image(
+                address,
+                color,
+                font,
+                iterator,
+                folder,
+            )
+            self.save_label(folder, image_path, text)
+            iterator = iterator + 1
+
+        return iterator
+
     def generate(self):
 
         train_iterator = 0
@@ -195,25 +210,63 @@ class DatasetGenerator:
         #     train_iterator, test_iterator
         # )
 
-        # new_3_train_iterator, new_3_test_iterator = self.generate_passport_numbers(
-        #     train_iterator, test_iterator
+        # new_4_train_iterator, new_4_test_iterator = self.generate_passport_numbers(
+        #     new_3_train_iterator, new_3_test_iterator
         # )
 
-        # new_3_train_iterator, new_3_test_iterator = self.generate_doc_numbers(
-        #     train_iterator, test_iterator
+        # new_5_train_iterator, new_5_test_iterator = self.generate_doc_numbers(
+        #     new_4_train_iterator, new_4_test_iterator
         # )
 
-        new_3_train_iterator, new_3_test_iterator = self.generate_address(
+        new_6_train_iterator, new_6_test_iterator = self.generate_address(
             train_iterator, test_iterator
         )
 
         # print("new_train_iterator", new_train_iterator)
         # print("new_1_train_iterator", new_1_train_iterator)
         # print("new_2_train_iterator", new_2_train_iterator)
-        print("new_3_train_iterator", new_3_train_iterator)
+        print("new_3_train_iterator", new_6_train_iterator)
 
     def generate_address(self, train_iterator, test_iterator):
-        pass
+        config = {"file_path": "./textData/unique_addresses_30k.csv"}
+        train_data, test_data = data_provider("csv", config)
+
+        train_n_samples = 8
+        test_n_samples = 2
+
+        combinations = list(
+            product(
+                train_data,
+                range(len(self.fonts_combinations)),
+                self.pen_colors,
+            )
+        )
+
+        random.shuffle(combinations)
+        # Обрезаем до нужного количества
+        combinations = combinations[:train_n_samples]
+
+        train_iterator = self.save_combinations_with_address(
+            combinations, self.train_folder, train_iterator
+        )
+
+        combinations = list(
+            product(
+                test_data,
+                range(len(self.fonts_combinations)),
+                self.pen_colors,
+            )
+        )
+
+        random.shuffle(combinations)
+        # Обрезаем до нужного количества
+        combinations = combinations[:test_n_samples]
+
+        test_iterator = self.save_combinations_with_address(
+            combinations, self.test_folder, test_iterator
+        )
+
+        return train_iterator, test_iterator
 
     def generate_doc_numbers(self, train_iterator, test_iterator):
         random.seed(42)
