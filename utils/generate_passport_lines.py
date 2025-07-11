@@ -2,7 +2,6 @@ import random
 
 
 def generate_passport_lines(config):
-    # words = []
     train_data = []
     test_data = []
 
@@ -17,10 +16,5 @@ def generate_passport_lines(config):
 
             train_data.extend(content[:split_index])
             test_data.extend(content[split_index:])
-
-            # words.extend(content)
-
-    print("train_data", train_data[0])
-    print("train_data", len(train_data[0]))
 
     return train_data, test_data
