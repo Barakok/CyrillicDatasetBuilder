@@ -240,7 +240,7 @@ class DatasetGenerator:
 
         random.shuffle(combinations)
 
-        n = 10
+        n = 10000
         train_n_samples = int(n * 0.8)
 
         train_samples = train_n_samples
@@ -282,7 +282,7 @@ class DatasetGenerator:
         config = {"file_path": "./textData/unique_addresses_30k.csv"}
         train_data, test_data = data_provider("csv", config)
 
-        n = 10
+        n = 10000
         train_n_samples = int(n * 0.8)
         test_n_samples = n - train_n_samples
 
@@ -330,7 +330,7 @@ class DatasetGenerator:
             lambda: f"{random.randint(1,999):03}/АБ-{random.randint(2000,2025)}",
         ]
 
-        train_n_samples = 10
+        train_n_samples = 10000
         split_index = int(train_n_samples * 0.8)
 
         codes = []
@@ -364,7 +364,7 @@ class DatasetGenerator:
         return train_iterator, test_iterator
 
     def generate_passport_numbers(self, train_iterator, test_iterator):
-        train_n_samples = 10
+        train_n_samples = 10000
 
         split_index = int(train_n_samples * 0.8)
         passport_list = []
@@ -386,8 +386,6 @@ class DatasetGenerator:
                 region_code=r_code, department_code=d_code, number=number
             )
             passport_list.append(formatted)
-
-        print("passport_list", passport_list)
 
         # Все возможные комбинации: серия + номер
         combinations = list(
@@ -434,7 +432,7 @@ class DatasetGenerator:
             "{y}-{m}-{d}",
         ]
 
-        train_n_samples = 10
+        train_n_samples = 10000
 
         split_index = int(train_n_samples * 0.8)
 
@@ -472,7 +470,7 @@ class DatasetGenerator:
         train_data_word_cases = []
         test_data_word_cases = []
 
-        n = 10
+        n = 10000
         train_n_samples = int(n * 0.8)
         test_n_samples = n - train_n_samples
 
@@ -526,7 +524,7 @@ class DatasetGenerator:
         train_data_word_cases = []
         test_data_word_cases = []
 
-        n = 10
+        n = 10000
         train_n_samples = int(n * 0.8)
         test_n_samples = n - train_n_samples
 
@@ -579,7 +577,7 @@ class DatasetGenerator:
     def generate_fio_alt(self, train_iterator, test_iterator):
         train_data, test_data = data_provider("files", self.config)
 
-        n = 10
+        n = 30000
         train_n_samples = int(n * 0.8)
         test_n_samples = n - train_n_samples
 
@@ -598,6 +596,7 @@ class DatasetGenerator:
                 train_data_word_cases,
             )
         )
+
         random.shuffle(combinations)
         combinations = combinations[:train_n_samples]
 
