@@ -9,11 +9,8 @@ class WordMorphy:
         cases = ["nomn", "gent", "datv", "accs", "ablt", "loct"]
         result = []
 
-        print("word", word)
-
         for case in cases:
             inflect = self.morph.parse(word)[0].inflect({case})
-            print("inflect", inflect)
             if inflect:
                 declined = inflect.word
                 result.append(declined)

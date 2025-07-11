@@ -98,6 +98,33 @@ class DatasetGenerator:
         with open(f"{folder}/labels.txt", "a", encoding="utf-8") as file:
             file.write(f"{image_path}\t{text}" + "\n")
 
+    def getPattern(self, mode, combination):
+        pattern = ""
+
+        if mode == "initial":
+            word, n, s = combination
+            pattern = f"{word.capitalize()} {n}. {s}."
+
+        if mode == "":
+            pass
+
+        return pattern
+
+    def save_combinations(self, combinations, folder, iterator, mode):
+        for color, font, *combination in combinations:
+            pattern = self.getPattern(combination)
+            image_path, text = self.image_creator_instance.create_image(
+                pattern,
+                color,
+                font,
+                iterator,
+                folder,
+            )
+            self.save_label(folder, image_path, text)
+            iterator = iterator + 1
+
+        return iterator
+
     def save_combinations_with_initials(self, combinations, folder, iterator):
         for font, color, word, n, s in combinations:
             image_path, text = self.image_creator_instance.create_image(
@@ -128,8 +155,6 @@ class DatasetGenerator:
 
     def save_combinations_with_date(self, combinations, folder, iterator):
         for d, m, y, fmt, font, color in combinations:
-            # Валидация даты
-            dt = datetime.strptime(f"{d}.{m}.{y}", "%d.%m.%Y")
             m_int = int(m)
             formatted = fmt.format(d=d, m=m, y=y, m_name=self.russian_months[m_int - 1])
             image_path, text = self.image_creator_instance.create_image(
@@ -189,50 +214,170 @@ class DatasetGenerator:
 
         return iterator
 
+    def save_combinations_with_random_words(self, combinations, folder, iterator):
+        for words, font, color in combinations:
+            # Валидация даты
+            image_path, text = self.image_creator_instance.create_image(
+                words,
+                color,
+                font,
+                iterator,
+                folder,
+            )
+            self.save_label(folder, image_path, text)
+            iterator = iterator + 1
+
+        return iterator
+
     def generate(self):
 
-        train_iterator = 0
-        test_iterator = 0
+        train_iterator, test_iterator = 0, 0
 
-        # new_train_iterator, new_test_iterator = self.generate_fio_alt(
-        #     train_iterator, test_iterator
-        # )
+        steps = [
+            self.generate_fio_alt,
+            self.generate_lastName_with_initials,
+            self.generate_lastName_with_initial,
+            self.generate_dates,
+            self.generate_passport_numbers,
+            self.generate_doc_numbers,
+            self.generate_address,
+            self.generate_random_words,
+        ]
 
-        # new_1_train_iterator, new_1_test_iterator = (
-        #     self.generate_lastName_with_initials(new_train_iterator, new_test_iterator)
-        # )
+        for step in steps:
+            train_iterator, test_iterator = step(train_iterator, test_iterator)
+            print("train_iterator", train_iterator)
+            print("test_iterator", test_iterator)
 
-        # new_2_train_iterator, new_2_test_iterator = self.generate_lastName_with_initial(
-        #     new_1_train_iterator, new_1_test_iterator
-        # )
+    def generate_random_words(self, train_iterator, test_iterator):
+        neutral_vocab = [
+            # Частотные слова
+            "заявка",
+            "документ",
+            "данные",
+            "код",
+            "форма",
+            "система",
+            "режим",
+            "запись",
+            "отчет",
+            "таблица",
+            "пункт",
+            "вход",
+            "пользователь",
+            "сервер",
+            "папка",
+            "поиск",
+            "архив",
+            "шаблон",
+            # Термины
+            "печать",
+            "отдел",
+            "номер",
+            "файл",
+            "логин",
+            "сертификат",
+            "лицензия",
+            "сайт",
+            "отчетность",
+            # Аббревиатуры
+            "ФНС",
+            "ФССП",
+            "РЖД",
+            "ГИС",
+            "ФМС",
+            "ОГРН",
+            "ИНН",
+            "КПП",
+            "ПФР",
+            "СНИЛС",
+            "ТК",
+            "ТЦ",
+            "ФОИВ",
+            # Бессмысленные строки
+            "abc123",
+            "qwe_rty",
+            "zzz999",
+            "text_001",
+            "xxx777",
+            "test_mode",
+            "doc_x9",
+            # Геометрические и ИТ-слова
+            "строка",
+            "заголовок",
+            "сетка",
+            "рамка",
+            "цвет",
+            "размер",
+            "иконка",
+            "ссылка",
+        ]
 
-        # new_3_train_iterator, new_3_test_iterator = self.generate_dates(
-        #     train_iterator, test_iterator
-        # )
+        # 1-сложные и 2-сложные комбинации
+        one_word = neutral_vocab
+        two_word = [" ".join(pair) for pair in product(neutral_vocab, repeat=2)]
+        three_word = [" ".join(triple) for triple in product(neutral_vocab, repeat=3)]
 
-        # new_4_train_iterator, new_4_test_iterator = self.generate_passport_numbers(
-        #     new_3_train_iterator, new_3_test_iterator
-        # )
+        # Объединяем
+        all_combinations = one_word + two_word + three_word
 
-        # new_5_train_iterator, new_5_test_iterator = self.generate_doc_numbers(
-        #     new_4_train_iterator, new_4_test_iterator
-        # )
+        # Удалим дубликаты и shuffle
+        unique_combinations = list(set(all_combinations))
 
-        new_6_train_iterator, new_6_test_iterator = self.generate_address(
-            train_iterator, test_iterator
+        unique_combinations_len = len(unique_combinations)
+        split_index = int(unique_combinations_len * 0.8)
+
+        combinations = list(
+            product(
+                unique_combinations[:split_index],
+                range(len(self.fonts_combinations)),
+                self.pen_colors,
+            )
         )
 
-        # print("new_train_iterator", new_train_iterator)
-        # print("new_1_train_iterator", new_1_train_iterator)
-        # print("new_2_train_iterator", new_2_train_iterator)
-        print("new_3_train_iterator", new_6_train_iterator)
+        random.shuffle(combinations)
+
+        train_samples = 24000
+        test_samples = 6000
+
+        if len(combinations) < train_samples:
+            train_samples = len(combinations)
+
+        # Ограничим количество (например, 30k)
+        combinations = combinations[:train_samples]
+
+        train_iterator = self.save_combinations_with_address(
+            combinations, self.train_folder, train_iterator
+        )
+
+        combinations = list(
+            product(
+                unique_combinations[split_index:],
+                range(len(self.fonts_combinations)),
+                self.pen_colors,
+            )
+        )
+
+        random.shuffle(combinations)
+
+        if len(combinations) < test_samples:
+            test_samples = len(combinations)
+
+        # Ограничим количество (например, 30k)
+        combinations = combinations[:test_samples]
+
+        test_iterator = self.save_combinations_with_address(
+            combinations, self.test_folder, test_iterator
+        )
+
+        return train_iterator, test_iterator
 
     def generate_address(self, train_iterator, test_iterator):
         config = {"file_path": "./textData/unique_addresses_30k.csv"}
         train_data, test_data = data_provider("csv", config)
 
-        train_n_samples = 8
-        test_n_samples = 2
+        train_n_samples = 24000
+        test_n_samples = 6000
 
         combinations = list(
             product(
@@ -515,7 +660,8 @@ class DatasetGenerator:
 
     def generate_fio_alt(self, train_iterator, test_iterator):
         train_data, test_data = data_provider("files", self.config)
-        n_samples = 100000
+        train_n_samples = 80000
+        test_n_samples = 20000
         train_data_word_cases = []
         test_data_word_cases = []
 
@@ -532,7 +678,7 @@ class DatasetGenerator:
             )
         )
         random.shuffle(combinations)
-        combinations = combinations[:n_samples]
+        combinations = combinations[:train_n_samples]
 
         for font, color, word in combinations:
             image_path, text = self.image_creator_instance.create_image(
@@ -558,7 +704,7 @@ class DatasetGenerator:
             )
         )
         random.shuffle(combinations)
-        combinations = combinations[:n_samples]
+        combinations = combinations[:test_n_samples]
 
         for font, color, word in combinations:
             image_path, text = self.image_creator_instance.create_image(

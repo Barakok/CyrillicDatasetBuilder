@@ -15,8 +15,6 @@ class image_creator:
         self.fonts = {}
 
         for key in fonts_combinations:
-            print("key", key)
-            print("fonts_combinations[key]", fonts_combinations[key])
             self.fonts[key] = ImageFont.truetype(
                 fonts_combinations[key]["font"], fonts_combinations[key]["size"]
             )
@@ -41,7 +39,5 @@ class image_creator:
 
         # Сохраняем изображение
         image.save(f"{image_folder}/{image_path}")
-
-        print("Изображение сохранено как output.png")
 
         return image_path, text
